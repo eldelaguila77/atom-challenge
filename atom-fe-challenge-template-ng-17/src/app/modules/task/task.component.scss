@@ -1,0 +1,71 @@
+/* task.component.scss */
+
+.task-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  mat-card {
+    padding: 0.5em;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 20px;
+  }
+  
+  .task-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .full-width {
+    width: 100%;
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+    button {
+      margin-left: 10px;
+    }
+  }
+  
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  table {
+    width: 100%;
+  }
+
+  .logout-button {
+    margin-left: auto;
+    margin-right: 0;
+}
+  
+  mat-header-cell, mat-cell {
+    padding: 8px;
+    word-wrap: break-word;
+  }
+  
+  @media (max-width: 800px) {
+    mat-card {
+      margin: 10px;
+    }
+  
+    mat-header-cell, mat-cell {
+      padding: 4px;
+    }
+  
+    .button-container {
+      justify-content: center;
+    }
+
+    .logout-button {
+        margin-left: auto;
+        margin-right: 0;
+    }
+}
