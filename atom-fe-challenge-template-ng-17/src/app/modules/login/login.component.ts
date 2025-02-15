@@ -28,9 +28,10 @@ import { MatCardModule } from '@angular/material/card';
 export class LoginComponent {
   constructor(private authService: AuthService, private router: Router, public dialog: MatDialog) {}
 
-  onSubmit(loginForm: NgForm): void {
+  async onSubmit(loginForm: NgForm): Promise<void> {
     const email = loginForm.value.email;
-    if (this.authService.login(email)) {
+    const loggedIn = await this.authService.login(email);
+    if (loggedIn) {
       this.router.navigate(['/tasks']);
     } else {
       const dialogRef = this.dialog.open(UserCreationDialogComponent, {
@@ -38,10 +39,10 @@ export class LoginComponent {
         data: { email }
       });
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe(async result => {
         if (result) {
-          this.authService.createUser(email);
-          this.authService.login(email);
+          await this.authService.createUser(email);
+          await this.authService.login(email);
           this.router.navigate(['/tasks']);
         }
       });

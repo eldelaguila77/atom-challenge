@@ -1,31 +1,35 @@
 import { Injectable } from '@angular/core';
+import { HttpService } from './http.service';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private users: { email: string }[] = [];
-  private currentUser: { email: string } | null = null;
+  private currentUser: { id: string; email: string } | null = null;
 
-  constructor() {}
+  constructor(private httpService: HttpService) {}
 
-  getUserByEmail(email: string): { email: string } | null {
-    return this.users.find(user => user.email === email) || null;
+  getUserByEmail(email: string): Promise<{ id: string; email: string } | null> {
+    return firstValueFrom(this.httpService.get<{ id: string; email: string }>(`/users/${email}`))
+      .then(user => user || null)
+      .catch(() => null);
   }
 
-  createUser(email: string): { email: string } {
-    const newUser = { email };
-    this.users.push(newUser);
-    return newUser;
-  } 
+  createUser(email: string): Promise<{ id: string; email: string }> {
+    return firstValueFrom(this.httpService.post<{ id: string; email: string }>('/users', { email }));
+  }
 
-  login(email: string): boolean {
-    const user = this.getUserByEmail(email);
-    if (user) {
-      this.currentUser = user;
-      return true;
-    }
-    return false;
+  login(email: string): Promise<{ id: string; email: string } | null> {
+    console.log('login', email);
+    return this.getUserByEmail(email).then(user => {
+      console.log('user', user);
+      if (user && user.email) {
+        this.currentUser = user;
+        return this.currentUser;
+      }
+      return null;
+    });
   }
 
   logout(): void {
@@ -36,7 +40,7 @@ export class AuthService {
     return this.currentUser !== null;
   }
 
-  getCurrentUser(): { email: string } | null {
+  getCurrentUser(): { id: string; email: string } | null {
     return this.currentUser;
   }
 }

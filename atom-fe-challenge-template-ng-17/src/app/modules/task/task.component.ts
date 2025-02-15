@@ -1,4 +1,4 @@
-import { Component, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
@@ -15,12 +15,16 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatSort } from '@angular/material/sort';
 import { AuthService } from '../../services/auth.service';
+import { TaskService } from '../../services/task.service';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 
 interface Task {
+  id?: string;
   title: string;
   description: string;
   createdAt: Date;
   completed: boolean;
+  userId: string;
 }
 
 @Component({
@@ -43,17 +47,19 @@ interface Task {
     MatSortModule
   ]
 })
-export class TaskComponent {
-  newTask: Task = { title: '', description: '', createdAt: new Date(), completed: false };
+export class TaskComponent implements AfterViewInit {
+  newTask: Task = { title: '', description: '', createdAt: new Date(), completed: false, userId: '' };
   tasks: MatTableDataSource<Task> = new MatTableDataSource<Task>([]);
   displayedColumns: string[] = ['title', 'description', 'createdAt', 'status', 'completed', 'actions'];
   editingTask: Task | null = null;
 
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private router: Router, public dialog: MatDialog, private cdr: ChangeDetectorRef, private authService: AuthService) {
+  constructor(private router: Router, public dialog: MatDialog, private cdr: ChangeDetectorRef, private authService: AuthService, private taskService: TaskService) {
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
+    } else {
+      this.loadTasks();
     }
   }
 
@@ -61,27 +67,35 @@ export class TaskComponent {
     this.tasks.sort = this.sort;
   }
 
-  addTask(): void {
-    if (this.editingTask) {
-      // Actualizar tarea existente
-      const index = this.tasks.data.indexOf(this.editingTask);
-      if (index !== -1) {
-        this.tasks.data[index] = {
-          ...this.editingTask,
-          title: this.newTask.title,
-          description: this.newTask.description,
-          createdAt: this.editingTask.createdAt
-        };
-        this.tasks.data = [...this.tasks.data]; // Actualizar la tabla
-      }
-      this.editingTask = null;
-    } else {
-      // Agregar nueva tarea
-      const task = { ...this.newTask, createdAt: new Date() };
-      this.tasks.data = [...this.tasks.data, task];
+  loadTasks(): void {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.taskService.getTasksByUserId(user.email).subscribe(tasks => {
+        this.tasks.data = tasks;
+        this.cdr.markForCheck();
+      });
     }
-    this.newTask = { title: '', description: '', createdAt: new Date(), completed: false };
-    console.log("table: " , this.tasks.data);
+  }
+
+  addTask(): void {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.newTask.userId = user.email;
+      if (this.editingTask) {
+        // Actualizar tarea existente
+        this.taskService.updateTask(this.editingTask.id!, this.newTask).subscribe(() => {
+          this.loadTasks();
+          this.editingTask = null;
+          this.newTask = { title: '', description: '', createdAt: new Date(), completed: false, userId: '' };
+        });
+      } else {
+        // Agregar nueva tarea
+        this.taskService.addTask(this.newTask).subscribe(() => {
+          this.loadTasks();
+          this.newTask = { title: '', description: '', createdAt: new Date(), completed: false, userId: '' };
+        });
+      }
+    }
   }
 
   editTask(task: Task): void {
@@ -91,17 +105,32 @@ export class TaskComponent {
 
   cancelEdit(): void {
     this.editingTask = null;
-    this.newTask = { title: '', description: '', createdAt: new Date(), completed: false };
+    this.newTask = { title: '', description: '', createdAt: new Date(), completed: false, userId: '' };
   }
 
   deleteTask(task: Task): void {
-    this.tasks.data = this.tasks.data.filter(t => t !== task);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '250px',
+      data: { message: '¿Estás seguro de que deseas eliminar esta tarea?' }
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.taskService.deleteTask(task.id!).subscribe(() => {
+          this.loadTasks();
+        });
+      }
+    });
   }
 
-  toggleTaskCompletion(): void {
-    this.tasks.data = [...this.tasks.data];
-    this.cdr.markForCheck();
-    console.log("table: " , this.tasks.data);
+  toggleTaskCompletion(task: Task): void {
+    const updatedTask = { ...task, completed: task.completed };
+    console.log('Updating task', updatedTask);
+    this.taskService.updateTask(task.id!, updatedTask).subscribe((result) => {
+      console.log('Task updated', result);
+      if (result) {
+        this.loadTasks();
+      }
+    });
   }
 
   applyFilter(event: Event): void {

@@ -5,7 +5,7 @@
       <form (ngSubmit)="onSubmit(loginForm)" #loginForm="ngForm">
         <mat-form-field appearance="fill">
           <mat-label>Correo</mat-label>
-          <input matInput type="email" name="email" ngModel required>
+          <input matInput type="email" name="email" ngModel required email>
         </mat-form-field>
         <button mat-raised-button color="primary" type="submit" [disabled]="!loginForm.valid">Iniciar sesión</button>
       </form>
