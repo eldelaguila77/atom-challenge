@@ -2,6 +2,10 @@
 
 This project consists of a backend and a frontend.
 
+In this project, it was decided to use Angular 17 as an option using the template provided, applying Angular Material for the design.
+
+In the backend, it was requested to use Firebase, a project was created in Firebase to save the information, the backend was made with the Nest framework to maintain the syntax with TypeScript, it was deployed as a cloud function.
+
 ## Backend
 
 The backend code is located in the `atom-be-nest-challenge` folder. It is built using Nest.js and Node.js. To get the versions of the packages used in the backend, please refer to the `package.json` file inside the `functions` folder.
