@@ -17,6 +17,7 @@ import { MatSort } from '@angular/material/sort';
 import { AuthService } from '../../services/auth.service';
 import { TaskService } from '../../services/task.service';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
+import { ToastrService } from 'ngx-toastr';
 
 interface Task {
   id?: string;
@@ -55,7 +56,7 @@ export class TaskComponent implements AfterViewInit {
 
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private router: Router, public dialog: MatDialog, private cdr: ChangeDetectorRef, private authService: AuthService, private taskService: TaskService) {
+  constructor(private router: Router, public dialog: MatDialog, private cdr: ChangeDetectorRef, private authService: AuthService, private taskService: TaskService, private toastr: ToastrService) {
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
     } else {
@@ -88,11 +89,13 @@ export class TaskComponent implements AfterViewInit {
           this.editingTask = null;
           this.newTask = { title: '', description: '', createdAt: new Date(), completed: false, userId: '' };
         });
+        this.toastr.success('Tarea actualizada correctamente');
       } else {
         // Agregar nueva tarea
         this.taskService.addTask(this.newTask).subscribe(() => {
           this.loadTasks();
           this.newTask = { title: '', description: '', createdAt: new Date(), completed: false, userId: '' };
+          this.toastr.success('Tarea agregada correctamente');
         });
       }
     }
@@ -117,6 +120,7 @@ export class TaskComponent implements AfterViewInit {
       if (result) {
         this.taskService.deleteTask(task.id!).subscribe(() => {
           this.loadTasks();
+          this.toastr.success('Tarea eliminada correctamente');
         });
       }
     });
@@ -129,6 +133,7 @@ export class TaskComponent implements AfterViewInit {
       console.log('Task updated', result);
       if (result) {
         this.loadTasks();
+        this.toastr.success('Tarea actualizada correctamente');
       }
     });
   }
