@@ -10,4 +10,5 @@ node_modules/
 *.local
 .nx/
 .vscode
-.angular/cache/
+.angular/
+.editorconfig
