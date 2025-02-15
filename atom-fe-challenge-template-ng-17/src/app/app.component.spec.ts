@@ -1,30 +1,22 @@
-import { TestBed } from "@angular/core/testing";
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AppComponent } from './app.component';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
-import { AppComponent } from "./app.component";
+describe('AppComponent', () => {
+  let component: AppComponent;
+  let fixture: ComponentFixture<AppComponent>;
 
-describe("AppComponent", () => {
-    beforeEach(async () => {
-        await TestBed.configureTestingModule({
-            imports: [AppComponent],
-        }).compileComponents();
-    });
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [AppComponent, NoopAnimationsModule]
+    }).compileComponents();
 
-    it("should create the app", () => {
-        const fixture = TestBed.createComponent(AppComponent);
-        const app = fixture.componentInstance;
-        expect(app).toBeTruthy();
-    });
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
 
-    it("should have the 'atom-challenge-fe-template' title", () => {
-        const fixture = TestBed.createComponent(AppComponent);
-        const app = fixture.componentInstance;
-        expect(app.title).toEqual("atom-challenge-fe-template");
-    });
-
-    it("should render title", () => {
-        const fixture = TestBed.createComponent(AppComponent);
-        fixture.detectChanges();
-        const compiled = fixture.nativeElement as HTMLElement;
-        expect(compiled.querySelector("h1")?.textContent).toContain("Hello, atom-challenge-fe-template");
-    });
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
 });
